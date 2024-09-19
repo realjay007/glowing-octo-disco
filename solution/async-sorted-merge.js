@@ -9,6 +9,7 @@ const MinHeap = require("../lib/min-heap");
  */
 
 /**
+ * Class to convert a LogSource into a ReadableStream source
  * @implements {UnderlyingDefaultSource<Log>}
  */
 class LogStreamSource {
@@ -49,10 +50,13 @@ module.exports = async (logSources, printer) => {
    */
   const minHeap = new MinHeap();
 
+  // Create a reader for each log source
   const logReaders = logSources.map((logSource) => {
     return new ReadableStream(
       new LogStreamSource(logSource),
-      { highWaterMark: 5 }, // Buffer up to 5 logs
+      // Buffer up to 5 logs. A high value uses more memory but fetches more in parallel, increasing speed.
+      // A low value uses less memory but fetches more sequentially, decreasing speed.
+      { highWaterMark: 5 },
     ).getReader();
   });
 
